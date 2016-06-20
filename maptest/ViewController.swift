@@ -27,6 +27,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         myButton.layer.cornerRadius = 20.0
         myButton.layer.position = CGPoint(x: self.view.bounds.width-40, y:self.view.bounds.height-40)
         myButton.addTarget(self, action: "onClickMyButton:", forControlEvents: .TouchUpInside)
+        myButton.showsTouchWhenHighlighted = true
         
         // LocationManagerの生成.
         myLocationManager = CLLocationManager()
