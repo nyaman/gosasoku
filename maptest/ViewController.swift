@@ -88,7 +88,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         myLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:100.0)
 
         distLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: 30))
-        distLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:self.view.bounds.height - 100)
+        distLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:150)
 
         self.view.addSubview(myButton)
         
@@ -154,7 +154,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         // 座標を設定.
         myPin.coordinate = center
         // タイトルを設定.
-        myPin.title = NSString(format: "精度 %.1f", myLastLocation.horizontalAccuracy.description) as String
+        myPin.title = NSString(format: "精度 %.1f", myLastLocation.horizontalAccuracy) as String
         // サブタイトルを設定.
         myPin.subtitle = "時刻 "+pointtime
         
