@@ -86,18 +86,15 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         
         myLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: 30))
         myLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:100.0)
-//        myLabel.text = locationCount.description+"回測定しました"
-//        myLabel.textAlignment = NSTextAlignment.Center
 
         distLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: 30))
         distLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:self.view.bounds.height - 100)
 
         self.view.addSubview(myButton)
-//        self.view.addSubview(myLabel)
         
         // 長押しのUIGestureRecognizerを生成.
-        var myLongPress: UILongPressGestureRecognizer = UILongPressGestureRecognizer()
-        myLongPress.addTarget(self, action: "recognizeLongPress:")
+        let myLongPress: UILongPressGestureRecognizer = UILongPressGestureRecognizer()
+        myLongPress.addTarget(self, action: #selector(ViewController.recognizeLongPress(_:)))
         
         // MapViewにUIGestureRecognizerを追加.
         myMapView.addGestureRecognizer(myLongPress)
@@ -157,7 +154,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         // 座標を設定.
         myPin.coordinate = center
         // タイトルを設定.
-        myPin.title = "精度 "+myLastLocation.horizontalAccuracy.description
+        myPin.title = NSString(format: "精度 %.1f", myLastLocation.horizontalAccuracy.description) as String
         // サブタイトルを設定.
         myPin.subtitle = "時刻 "+pointtime
         
@@ -178,14 +175,15 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         }
         
         // 長押しした地点の座標を取得.
-        var location = sender.locationInView(myMapView)
+        let location = sender.locationInView(myMapView)
         
         // locationをCLLocationCoordinate2Dに変換.
         let distCoordinate: CLLocationCoordinate2D = myMapView.convertPoint(location, toCoordinateFromView: myMapView)
         
-        var point1 = MKMapPointForCoordinate(distCoordinate)
-        var point2 = MKMapPointForCoordinate(self.lastlocation)
-        var distance = MKMetersBetweenMapPoints(point1, point2)
+        // 2点間の距離はMKMapPointで比較
+        let point1 = MKMapPointForCoordinate(distCoordinate)
+        let point2 = MKMapPointForCoordinate(self.lastlocation)
+        let distance = MKMetersBetweenMapPoints(point1, point2)
         
         distLabel.text = NSString(format: "%.1f m離れています", distance) as String
         distLabel.textAlignment = NSTextAlignment.Center
