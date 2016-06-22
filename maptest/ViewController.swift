@@ -13,7 +13,10 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     var myLocationManager: CLLocationManager!
     
     var myLabel:UILabel!
+    var distLabel:UILabel!
 
+    var lastlocation :CLLocationCoordinate2D!
+    
     var locationCount = 0
     
     override func viewDidLoad() {
@@ -85,8 +88,19 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         myLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:100.0)
 //        myLabel.text = locationCount.description+"回測定しました"
 //        myLabel.textAlignment = NSTextAlignment.Center
+
+        distLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: 30))
+        distLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:self.view.bounds.height - 100)
+
         self.view.addSubview(myButton)
 //        self.view.addSubview(myLabel)
+        
+        // 長押しのUIGestureRecognizerを生成.
+        var myLongPress: UILongPressGestureRecognizer = UILongPressGestureRecognizer()
+        myLongPress.addTarget(self, action: "recognizeLongPress:")
+        
+        // MapViewにUIGestureRecognizerを追加.
+        myMapView.addGestureRecognizer(myLongPress)
     }
     
     // ボタンイベントのセット.
@@ -103,6 +117,8 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         let myLastLocation: CLLocation = myLocations.lastObject as! CLLocation
         let myLocation:CLLocationCoordinate2D = myLastLocation.coordinate
         
+        self.lastlocation = myLocation
+        
         // 縮尺.
         let myLatDist : CLLocationDistance = 100
         let myLonDist : CLLocationDistance = 100
@@ -110,18 +126,30 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         // Regionを作成.
         let myRegion: MKCoordinateRegion = MKCoordinateRegionMakeWithDistance(myLocation, myLatDist, myLonDist);
         
-        locationCount++
+        locationCount += 1
         
         // MapViewに反映.
         myMapView.setRegion(myRegion, animated: true)
         myLabel.text = locationCount.description+"回測定しました"
         myLabel.textAlignment = NSTextAlignment.Center
         self.view.addSubview(myLabel)
+
+        //ピンを立てる
         putPin(myLastLocation)
+
+        //自動更新stop
+        manager.stopUpdatingLocation()
     }
 
     //ピンを立てる関数
     func putPin(myLastLocation: CLLocation) {
+        let now = NSDate()
+        
+        let formatter = NSDateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
+        
+        let pointtime = formatter.stringFromDate(now)
+        
         // ピンを生成.
         let myPin: MKPointAnnotation = MKPointAnnotation()
         // 中心点.
@@ -131,10 +159,37 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         // タイトルを設定.
         myPin.title = "精度 "+myLastLocation.horizontalAccuracy.description
         // サブタイトルを設定.
-        myPin.subtitle = "緯度 "+myLastLocation.coordinate.latitude.description+"¥n"+"経度 "+myLastLocation.coordinate.longitude.description
+        myPin.subtitle = "時刻 "+pointtime
+        
+ //       myPin.description = "緯度 "+myLastLocation.coordinate.latitude.description+"\n経度 "+myLastLocation.coordinate.longitude.description
         
         // MapViewにピンを追加.
         myMapView.addAnnotation(myPin)
+    }
+    
+    /*
+     長押しを感知した際に呼ばれるメソッド.
+     */
+    func recognizeLongPress(sender: UILongPressGestureRecognizer) {
+        
+        // 長押しの最中に何度もピンを生成しないようにする.
+        if sender.state != UIGestureRecognizerState.Began {
+            return
+        }
+        
+        // 長押しした地点の座標を取得.
+        var location = sender.locationInView(myMapView)
+        
+        // locationをCLLocationCoordinate2Dに変換.
+        let distCoordinate: CLLocationCoordinate2D = myMapView.convertPoint(location, toCoordinateFromView: myMapView)
+        
+        var point1 = MKMapPointForCoordinate(distCoordinate)
+        var point2 = MKMapPointForCoordinate(self.lastlocation)
+        var distance = MKMetersBetweenMapPoints(point1, point2)
+        
+        distLabel.text = NSString(format: "%.1f m離れています", distance) as String
+        distLabel.textAlignment = NSTextAlignment.Center
+        self.view.addSubview(distLabel)
     }
     
     // Regionが変更した時に呼び出されるメソッド.
