@@ -131,11 +131,12 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         myLabel.textAlignment = NSTextAlignment.Center
         self.view.addSubview(myLabel)
 
-        //ピンを立てる
-        putPin(myLastLocation)
-
-        //自動更新stop
-        manager.stopUpdatingLocation()
+        if (myLastLocation.horizontalAccuracy <= 65.0) {
+            //ピンを立てる
+            putPin(myLastLocation)
+            //自動更新stop
+            manager.stopUpdatingLocation()
+        }
     }
 
     //ピンを立てる関数
